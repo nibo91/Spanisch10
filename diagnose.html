@@ -1,0 +1,994 @@
+```html
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spanisch Diagnose-Quiz – Klasse 10</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: #f0f4f8;
+    color: #1a202c;
+    min-height: 100vh;
+  }
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  #start-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  #start-screen.active { display: flex; }
+
+  .start-card {
+    background: white;
+    border-radius: 16px;
+    padding: 40px 32px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  .start-card h1 { font-size: 1.6rem; color: #2b6cb0; margin-bottom: 8px; }
+  .start-card .subtitle { color: #718096; margin-bottom: 32px; font-size: 0.95rem; line-height: 1.5; }
+  .start-card label { display: block; text-align: left; font-weight: 600; margin-bottom: 8px; color: #2d3748; }
+  .start-card input[type="text"] {
+    width: 100%; padding: 14px 16px; font-size: 1rem;
+    border: 2px solid #cbd5e0; border-radius: 10px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .start-card input[type="text"]:focus { border-color: #2b6cb0; }
+  .error { color: #e53e3e; font-size: 0.85rem; margin-top: 6px; display: none; }
+  .btn-primary {
+    margin-top: 24px; width: 100%; padding: 16px;
+    background: #2b6cb0; color: white; font-size: 1.05rem;
+    font-weight: 700; border: none; border-radius: 10px;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .btn-primary:hover { background: #2c5282; }
+  .info-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px; margin: 24px 0; text-align: left;
+  }
+  .info-item { background: #ebf8ff; border-radius: 10px; padding: 14px; }
+  .info-item .val { font-size: 1.3rem; font-weight: 700; color: #2b6cb0; }
+  .info-item .lbl { font-size: 0.78rem; color: #4a5568; margin-top: 2px; }
+
+  #quiz-screen { min-height: 100vh; padding-bottom: 40px; }
+  #quiz-screen.active { display: block; }
+
+  .quiz-header {
+    background: #2b6cb0; color: white;
+    padding: 16px 20px; position: sticky; top: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 8px;
+  }
+  .quiz-header .hname { font-weight: 600; font-size: 0.9rem; opacity: 0.9; }
+  .timer-box {
+    background: rgba(255,255,255,0.2); border-radius: 8px;
+    padding: 6px 14px; font-weight: 700; font-size: 1rem;
+    min-width: 80px; text-align: center;
+  }
+  .timer-box.warn { background: #f6ad55; color: #7b341e; }
+  .timer-box.danger { background: #fc8181; color: #742a2a; animation: pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+
+  .progress-bar-wrap { width: 100%; height: 6px; background: rgba(255,255,255,0.3); }
+  .progress-bar-fill { height: 100%; background: #68d391; transition: width 0.3s; }
+
+  .quiz-body { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+
+  .block-title {
+    font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.08em; color: #2b6cb0; background: #ebf8ff;
+    padding: 6px 12px; border-radius: 20px; display: inline-block; margin-bottom: 16px;
+  }
+  .question-card {
+    background: white; border-radius: 14px; padding: 24px;
+    margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    border-left: 4px solid #cbd5e0;
+  }
+  .question-card.band4 { border-left-color: #2b6cb0; }
+  .question-card.band3 { border-left-color: #38a169; }
+  .question-card.band12 { border-left-color: #a0aec0; }
+
+  .q-meta { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+  .q-num { font-size: 0.78rem; color: #718096; }
+  .q-band { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+  .band4-tag { background: #ebf8ff; color: #2b6cb0; }
+  .band3-tag { background: #f0fff4; color: #276749; }
+  .band12-tag { background: #f7fafc; color: #718096; }
+  .q-pts { font-size: 0.72rem; color: #718096; margin-left: auto; }
+  .q-text { font-size: 1rem; line-height: 1.6; margin-bottom: 16px; color: #2d3748; }
+  .q-text em { font-style: italic; color: #4a5568; }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt-btn {
+    text-align: left; padding: 13px 16px;
+    border: 2px solid #e2e8f0; border-radius: 10px;
+    background: white; cursor: pointer; font-size: 0.95rem;
+    color: #2d3748; transition: all 0.15s; line-height: 1.4;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .opt-btn:hover { border-color: #2b6cb0; background: #ebf8ff; }
+  .opt-btn.selected { border-color: #2b6cb0; background: #ebf8ff; color: #2b6cb0; font-weight: 600; }
+
+  .quiz-nav {
+    max-width: 720px; margin: 0 auto; padding: 16px;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  }
+  .btn-nav {
+    padding: 13px 28px; border-radius: 10px; border: none;
+    font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-back { background: #e2e8f0; color: #4a5568; }
+  .btn-back:hover { background: #cbd5e0; }
+  .btn-next { background: #2b6cb0; color: white; }
+  .btn-next:hover { background: #2c5282; }
+  .btn-submit { background: #276749; color: white; }
+  .btn-submit:hover { background: #22543d; }
+  .q-counter { font-size: 0.85rem; color: #718096; }
+
+  #result-screen { min-height: 100vh; padding: 24px 16px 48px; }
+  #result-screen.active { display: block; }
+  .result-inner { max-width: 760px; margin: 0 auto; }
+
+  .result-header {
+    background: linear-gradient(135deg, #2b6cb0, #2c5282);
+    color: white; border-radius: 16px; padding: 32px;
+    text-align: center; margin-bottom: 24px;
+  }
+  .result-header h2 { font-size: 1.5rem; margin-bottom: 8px; }
+  .big-score { font-size: 3rem; font-weight: 800; margin: 12px 0; }
+  .score-sub { opacity: 0.85; font-size: 0.9rem; }
+
+  .section-card {
+    background: white; border-radius: 14px; padding: 24px;
+    margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+  .section-card h3 { font-size: 1rem; font-weight: 700; color: #2d3748; margin-bottom: 16px; }
+
+  .bar-row { margin-bottom: 14px; }
+  .bar-label { display: flex; justify-content: space-between; font-size: 0.85rem; color: #4a5568; margin-bottom: 5px; }
+  .bar-track { height: 14px; background: #e2e8f0; border-radius: 7px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 7px; }
+  .fill-good { background: #48bb78; }
+  .fill-ok { background: #f6ad55; }
+  .fill-poor { background: #fc8181; }
+
+  .foerder-item {
+    border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; border-left: 4px solid;
+  }
+  .foerder-hoch { background: #fff5f5; border-color: #fc8181; }
+  .foerder-mittel { background: #fffaf0; border-color: #f6ad55; }
+  .foerder-niedrig { background: #f0fff4; border-color: #68d391; }
+  .fi-band { font-size: 0.72rem; font-weight: 700; opacity: 0.7; margin-bottom: 4px; }
+  .fi-title { font-weight: 700; font-size: 0.9rem; margin-bottom: 4px; }
+  .fi-desc { font-size: 0.82rem; color: #4a5568; line-height: 1.5; }
+
+  .ans-card {
+    background: white; border-radius: 12px; padding: 18px 20px;
+    margin-bottom: 12px; box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    border-left: 4px solid #cbd5e0;
+  }
+  .ans-card.correct { border-left-color: #48bb78; }
+  .ans-card.wrong { border-left-color: #fc8181; }
+  .ans-top { display: flex; align-items: flex-start; gap: 10px; }
+  .ans-icon { font-size: 1.1rem; margin-top: 2px; flex-shrink: 0; }
+  .ans-q { font-size: 0.9rem; color: #2d3748; line-height: 1.5; font-weight: 600; flex: 1; }
+  .ans-detail { margin-top: 10px; font-size: 0.83rem; color: #4a5568; line-height: 1.6; }
+  .ans-given { color: #e53e3e; }
+  .ans-right { color: #276749; font-weight: 600; }
+  .ans-expl { font-style: italic; margin-top: 4px; }
+
+  .btn-export {
+    display: inline-block; padding: 13px 24px; border-radius: 10px;
+    border: none; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    margin: 8px 8px 0 0; transition: all 0.2s;
+  }
+  .btn-print { background: #2b6cb0; color: white; }
+  .btn-copy  { background: #e2e8f0; color: #2d3748; }
+
+  @media (max-width: 480px) {
+    .start-card { padding: 28px 18px; }
+    .quiz-body  { padding: 16px 10px; }
+    .question-card { padding: 18px 14px; }
+    .btn-nav { padding: 12px 18px; font-size: 0.88rem; }
+  }
+  @media print {
+    .quiz-header, .btn-export, .quiz-nav,
+    .progress-bar-wrap, #start-screen, #quiz-screen { display: none !important; }
+    body { background: white; }
+    .section-card, .ans-card { box-shadow: none; border: 1px solid #e2e8f0; page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ START -->
+<div id="start-screen" class="screen active">
+  <div class="start-card">
+    <h1>🇪🇸 Spanisch Diagnose-Quiz</h1>
+    <p class="subtitle">Klasse 10 · apúntate 1–4 · Grammatik-Diagnose<br>Bearbeitungszeit: 30 Minuten</p>
+    <div class="info-grid">
+      <div class="info-item"><div class="val">40</div><div class="lbl">Fragen</div></div>
+      <div class="info-item"><div class="val">30 min</div><div class="lbl">Bearbeitungszeit</div></div>
+      <div class="info-item"><div class="val">6</div><div class="lbl">Themenbereiche</div></div>
+      <div class="info-item"><div class="val">87 Pkt</div><div class="lbl">max. Punktzahl</div></div>
+    </div>
+    <label for="nameInput">Dein Name:</label>
+    <input type="text" id="nameInput" placeholder="Vorname Nachname" autocomplete="off"/>
+    <div class="error" id="nameError">Bitte gib deinen Namen ein.</div>
+    <button class="btn-primary" id="startBtn">Quiz starten →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ QUIZ -->
+<div id="quiz-screen" class="screen">
+  <div class="quiz-header">
+    <span class="hname" id="headerName"></span>
+    <div class="timer-box" id="timerBox">30:00</div>
+  </div>
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressBar" style="width:0%"></div>
+  </div>
+  <div class="quiz-body" id="quizBody"></div>
+  <div class="quiz-nav">
+    <button class="btn-nav btn-back" id="backBtn">← Zurück</button>
+    <span class="q-counter" id="qCounter"></span>
+    <button class="btn-nav btn-next" id="nextBtn">Weiter →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ RESULTS -->
+<div id="result-screen" class="screen">
+  <div class="result-inner" id="resultInner"></div>
+</div>
+
+<script>
+/* ================================================================
+   FRAGEN-DATEN
+   band: 4 = 3 Punkte | band: 3 = 2 Punkte | band: 1/2 = 1 Punkt
+================================================================ */
+var QUESTIONS = [
+
+  /* ── BLOCK 1: ZEITFORMEN ─────────────────────────────────── */
+  {
+    block:"Zeitformen", band:4, pts:3,
+    q:"Wähle die korrekte Form des <em>pretérito pluscuamperfecto</em>: Cuando llegamos, ella ya _____ (irse).",
+    opts:["se había ido","se fue","se ha ido","se iba"],
+    correct:0,
+    expl:"Das pretérito pluscuamperfecto (había + Partizip) beschreibt eine Handlung, die vor einem vergangenen Zeitpunkt abgeschlossen war. Bei reflexiven Verben steht das Reflexivpronomen vor había."
+  },
+  {
+    block:"Zeitformen", band:4, pts:3,
+    q:"Ergänze mit dem <em>futuro simple</em>: Mañana _____ (nosotros / tener) el examen.",
+    opts:["tendremos","tenemos","vamos a tener","tuvimos"],
+    correct:0,
+    expl:"Tener ist im futuro simple unregelmäßig: Stamm tendr- + Endungen (-é/-ás/-á/-emos/-éis/-án). Futuro inmediato (ir a + Inf.) und Präsens sind möglich, aber hier ist das futuro simple gefragt."
+  },
+  {
+    block:"Zeitformen", band:4, pts:3,
+    q:"Welche Aussage über den <em>condicional simple</em> ist korrekt?",
+    opts:[
+      "Er drückt Höflichkeit oder Hypothesen aus (z. B. ¿Podrías ayudarme?)",
+      "Er wird mit ir a + Infinitivo gebildet",
+      "Er drückt eine abgeschlossene Vergangenheit aus",
+      "Er hat dieselben Endungen wie der subjuntivo presente"
+    ],
+    correct:0,
+    expl:"Der condicional simple (hablaría, tendría …) drückt Höflichkeit, Wunsch oder hypothetische Aussagen aus. Bildung: Infinitiv + -ía/-ías/-ía/-íamos/-íais/-ían."
+  },
+  {
+    block:"Zeitformen", band:4, pts:3,
+    q:"<em>Pretérito perfecto vs. indefinido</em> – Welcher Satz ist im europäischen Spanisch korrekt?",
+    opts:[
+      "Este año he viajado a muchos países.",
+      "Este año viajé a muchos países.",
+      "Este año viajaba a muchos países.",
+      "Este año había viajado a muchos países."
+    ],
+    correct:0,
+    expl:"Im europäischen Spanisch steht das pretérito perfecto mit Zeitmarkern, die die Gegenwart einschließen (este año, hoy, ya, todavía). Das indefinido wäre eher lateinamerikanisch oder bei klar abgeschlossenen Zeiträumen korrekt."
+  },
+  {
+    block:"Zeitformen", band:4, pts:3,
+    q:"Alle drei Vergangenheitszeiten – wähle die richtige Kombination: Cuando _____ (llegar, yo), mis amigos ya _____ (comer) y la película _____ (empezar).",
+    opts:[
+      "llegué / habían comido / había empezado",
+      "llegaba / comieron / empezó",
+      "llegué / comían / había empezado",
+      "había llegado / habían comido / empezó"
+    ],
+    correct:0,
+    expl:"Llegué (indefinido) = die eintretende Handlung. Habían comido & había empezado (pluscuamperfecto) = beide vor der Ankunft bereits abgeschlossene Handlungen."
+  },
+  {
+    block:"Zeitformen", band:4, pts:3,
+    q:"Was drückt folgender Satz aus? <em>Cuando llegues, te llamo.</em>",
+    opts:[
+      "Eine zukünftige Bedingung – subjuntivo nach cuando für Zukünftiges",
+      "Eine gegenwärtige Gewohnheit",
+      "Eine vergangene Handlung",
+      "Eine Möglichkeit in der Vergangenheit"
+    ],
+    correct:0,
+    expl:"Nach cuando steht der subjuntivo presente, wenn die Handlung in der Zukunft liegt. Der Hauptsatz steht im Präsens oder futuro simple."
+  },
+  {
+    block:"Zeitformen", band:3, pts:2,
+    q:"Bilde das <em>pretérito imperfecto</em>: De niño, mi padre siempre _____ (escuchar) música clásica.",
+    opts:["escuchaba","escuchó","ha escuchado","escuche"],
+    correct:0,
+    expl:"Das pretérito imperfecto (-aba/-abas/-aba …) beschreibt vergangene Gewohnheiten oder Zustände. 'De niño' und 'siempre' sind typische Signalwörter."
+  },
+  {
+    block:"Zeitformen", band:3, pts:2,
+    q:"<em>Indefinido oder imperfecto?</em> Ayer _____ (yo/ver) una película mientras _____ (llover).",
+    opts:["vi / llovía","veía / llovió","vi / llovió","veía / llovía"],
+    correct:0,
+    expl:"Vi (indefinido) = einmalige abgeschlossene Handlung. Llovía (imperfecto) = Hintergrundzustand, der die Haupthandlung begleitet (Signalwort: mientras)."
+  },
+  {
+    block:"Zeitformen", band:2, pts:1,
+    q:"Forme das <em>pretérito indefinido</em>: El año pasado, nosotros _____ (ir) a la playa.",
+    opts:["fuimos","íbamos","hemos ido","vamos"],
+    correct:0,
+    expl:"Ir ist im pretérito indefinido unregelmäßig und hat dieselben Formen wie ser: fui, fuiste, fue, fuimos, fuisteis, fueron. 'El año pasado' → indefinido."
+  },
+  {
+    block:"Zeitformen", band:2, pts:1,
+    q:"Was bedeutet <em>estar + gerundio</em> in: <em>Ahora mismo estoy estudiando.</em>?",
+    opts:[
+      "Ich lerne gerade in diesem Moment (Verlaufsform)",
+      "Ich werde gleich lernen",
+      "Ich habe gelernt",
+      "Ich lerne normalerweise"
+    ],
+    correct:0,
+    expl:"Estar + gerundio bildet die Verlaufsform und drückt aus, dass eine Handlung genau jetzt stattfindet (ahora mismo = gerade jetzt)."
+  },
+
+  /* ── BLOCK 2: SUBJUNTIVO ─────────────────────────────────── */
+  {
+    block:"Subjuntivo", band:4, pts:3,
+    q:"Subjuntivo im Relativsatz: Busco un piso que _____ (estar) cerca del metro.",
+    opts:["esté","está","estará","estaba"],
+    correct:0,
+    expl:"Nach einem indefiniten oder nicht-existenten Bezugsnomen steht der subjuntivo im Relativsatz. Die Wohnung existiert noch nicht/ist unbekannt → esté (subjuntivo)."
+  },
+  {
+    block:"Subjuntivo", band:4, pts:3,
+    q:"Subjuntivo nach <em>aunque</em>: Welche Aussage ist korrekt?",
+    opts:[
+      "Aunque + subjuntivo = auch wenn (hypothetisch); aunque + indicativo = obwohl (bekannte Tatsache)",
+      "Aunque verlangt immer den subjuntivo",
+      "Aunque verlangt immer den indicativo",
+      "Aunque wird nur mit dem imperfecto verwendet"
+    ],
+    correct:0,
+    expl:"Aunque + subjuntivo = auch wenn (es unklar/hypothetisch ist). Aunque + indicativo = obwohl (bekannte Tatsache). Beide Formen sind korrekt – mit unterschiedlicher Bedeutung."
+  },
+  {
+    block:"Subjuntivo", band:4, pts:3,
+    q:"Infinitivo oder subjuntivo? Wähle: Quiero _____ este libro. / Quiero que tú _____ este libro.",
+    opts:[
+      "leer / leas",
+      "leer / lees",
+      "lea / leas",
+      "leer / lea"
+    ],
+    correct:0,
+    expl:"Gleiches Subjekt → Infinitivo (Quiero leer). Verschiedene Subjekte → subjuntivo nach querer que (Quiero que tú leas)."
+  },
+  {
+    block:"Subjuntivo", band:3, pts:2,
+    q:"Wähle den korrekten subjuntivo: No creo que _____ (ser) verdad.",
+    opts:["sea","es","fue","sería"],
+    correct:0,
+    expl:"No creo que / dudo que lösen den subjuntivo aus (Zweifel). Ser → subjuntivo presente → sea."
+  },
+  {
+    block:"Subjuntivo", band:3, pts:2,
+    q:"Welcher Satz verwendet den subjuntivo korrekt?",
+    opts:[
+      "Espero que venga pronto.",
+      "Espero que viene pronto.",
+      "Espero de que venga pronto.",
+      "Espero venir pronto. (verschiedene Subjekte)"
+    ],
+    correct:0,
+    expl:"Espero que + subjuntivo (verschiedene Subjekte). Ohne que steht der Infinitivo bei gleichem Subjekt. 'Espero de que' ist grammatisch falsch."
+  },
+  {
+    block:"Subjuntivo", band:3, pts:2,
+    q:"Es importante que todos _____ (hacer) su tarea.",
+    opts:["hagan","hacen","harán","hicieron"],
+    correct:0,
+    expl:"Nach es importante/necesario/fundamental que folgt der subjuntivo. Hacer ist unregelmäßig: haga, hagas, haga, hagamos, hagáis, hagan."
+  },
+  {
+    block:"Subjuntivo", band:3, pts:2,
+    q:"Wähle den richtigen Modus: Ojalá _____ (tener, nosotros) más tiempo.",
+    opts:["tengamos","tenemos","tendremos","tuviéramos"],
+    correct:0,
+    expl:"Ojalá löst immer den subjuntivo aus. Presente de subjuntivo von tener (nosotros): tengamos. (Das imperfecto de subjuntivo tuviéramos ist in apúntate 1–4 nicht eingeführt.)"
+  },
+
+  /* ── BLOCK 3: PRONOMEN ───────────────────────────────────── */
+  {
+    block:"Pronomen", band:4, pts:3,
+    q:"Doppelpronomen beim bejahten Imperativ (tú, Singular): 'Gib es mir!' → <em>¡_____ !</em>",
+    opts:["¡Dámelo!","¡Me lo da!","¡Dámele!","¡Lo dame!"],
+    correct:0,
+    expl:"Beim bejahten Imperativ werden Pronomen angehängt: dame + lo → ¡Dámelo! Reihenfolge: erst indirektes (me), dann direktes Objektpronomen (lo). Akzent wird gesetzt."
+  },
+  {
+    block:"Pronomen", band:4, pts:3,
+    q:"Possessivpronomen: 'Das Buch ist meins.' → <em>El libro es _____.</em>",
+    opts:["mío","mi","mía","mí"],
+    correct:0,
+    expl:"Betonte Possessivpronomen: mío/mía/míos/mías (meiner/meine/meins …). El libro (maskulin) → mío."
+  },
+  {
+    block:"Pronomen", band:4, pts:3,
+    q:"Pronomen beim gerundio: 'Ich lese es gerade.' → Wähle die korrekte Form.",
+    opts:[
+      "Estoy leyéndolo. (Pronomen angehängt an gerundio)",
+      "Lo estoy leyendo. (Pronomen vorgezogen)",
+      "Beide Varianten sind korrekt.",
+      "Estoy lo leyendo."
+    ],
+    correct:2,
+    expl:"Bei estar + gerundio kann das Pronomen entweder angehängt werden (leyéndolo, mit Akzent) oder vor estar stehen (lo estoy leyendo). Beide Varianten sind grammatisch korrekt."
+  },
+  {
+    block:"Pronomen", band:3, pts:2,
+    q:"Doppeltes Objektpronomen: ¿Me prestas el bolígrafo? – Sí, _____ presto.",
+    opts:["te lo","se lo","me lo","lo te"],
+    correct:0,
+    expl:"Direktes Obj.: el bolígrafo → lo; indirektes Obj.: a ti → te. Reihenfolge: indir. vor dir. → te lo. (se lo nur bei le/les + lo/la in der 3. Person.)"
+  },
+  {
+    block:"Pronomen", band:3, pts:2,
+    q:"Pronomen beim Infinitivo – beide Varianten korrekt? <em>Voy a comprarlo.</em> / <em>Lo voy a comprar.</em>",
+    opts:[
+      "Ja, beide sind korrekt – das Pronomen kann angehängt oder vorgezogen werden.",
+      "Nur 'Voy a comprarlo' ist korrekt.",
+      "Nur 'Lo voy a comprar' ist korrekt.",
+      "Keine der Formen ist korrekt."
+    ],
+    correct:0,
+    expl:"Bei Konstruktionen mit Infinitivo kann das Pronomen entweder angehängt (comprarlo) oder an das finite Verb vorgezogen (lo voy a comprar) werden. Beide Varianten sind korrekt."
+  },
+  {
+    block:"Pronomen", band:2, pts:1,
+    q:"Wähle das korrekte direkte Objektpronomen: ¿Ves a María? – Sí, _____ veo todos los días.",
+    opts:["la","le","lo","se"],
+    correct:0,
+    expl:"María ist weiblich → direktes Objektpronomen: la. Le wäre das indirekte Objektpronomen (a María le gusta …). Lo für maskuline Objekte."
+  },
+  {
+    block:"Pronomen", band:2, pts:1,
+    q:"Reflexives Verb – wähle die korrekte Form: Por las mañanas, yo siempre _____ (levantarse) tarde.",
+    opts:["me levanto","me levanta","levanto me","me levantó"],
+    correct:0,
+    expl:"Reflexive Verben: Reflexivpronomen steht vor dem konjugierten Verb. Yo → me levanto. Das Pronomen wird nie zwischen Subjektpronomen und Verb eingeschoben."
+  },
+
+  /* ── BLOCK 4: NOMINALPHRASE & SYNTAX ────────────────────── */
+  {
+    block:"Nominalphrase & Syntax", band:4, pts:3,
+    q:"Adjektivstellung – Bedeutungsunterschied: <em>un gran hombre</em> vs. <em>un hombre grande</em>",
+    opts:[
+      "un gran hombre = ein großartiger Mensch; un hombre grande = ein körperlich großer Mensch",
+      "Beide bedeuten dasselbe: ein großer Mensch",
+      "grande vor dem Nomen ist ungrammatisch",
+      "un gran hombre = ein erwachsener Mann"
+    ],
+    correct:0,
+    expl:"Grande vor dem Nomen wird zu gran und bedeutet 'großartig/bedeutend'. Grande nach dem Nomen bedeutet 'körperlich groß'. Ähnlich: pobre, único, antiguo verändern ihre Bedeutung je nach Stellung."
+  },
+  {
+    block:"Nominalphrase & Syntax", band:4, pts:3,
+    q:"Relativpronomen <em>cuyo</em>: El escritor _____ novela leí ayer es famoso.",
+    opts:["cuya","cuyo","que","quien"],
+    correct:0,
+    expl:"Cuyo/-a/-os/-as (dessen/deren) kongruiert mit dem folgenden Nomen, nicht mit dem Bezugswort. La novela (fem.) → cuya novela."
+  },
+  {
+    block:"Nominalphrase & Syntax", band:4, pts:3,
+    q:"<em>Por</em> oder <em>para</em>? 'Ich rufe an, um über die Pläne zu sprechen.' → <em>Te llamo _____ hablar de los planes.</em>",
+    opts:[
+      "para hablar (Zweck/Ziel)",
+      "por hablar (Grund/Ursache)",
+      "Beide sind korrekt",
+      "Keines von beiden passt"
+    ],
+    correct:0,
+    expl:"Para + Infinitivo drückt Zweck/Ziel aus. Por + Infinitivo drückt Grund oder Ursache aus (z. B. Lo castigaron por mentir). Hier: Ziel des Anrufs → para."
+  },
+  {
+    block:"Nominalphrase & Syntax", band:4, pts:3,
+    q:"Passiv – welche Form ist eine <em>pasiva refleja</em>?",
+    opts:[
+      "Se venden pisos en el centro.",
+      "Los pisos son vendidos por la empresa.",
+      "Vendieron los pisos ayer.",
+      "Están vendiendo los pisos."
+    ],
+    correct:0,
+    expl:"Pasiva refleja: se + Verb 3. Person Sg./Pl. ohne genannten Agens. Ser + Partizip ist das echte Passiv (Agens mit por möglich)."
+  },
+  {
+    block:"Nominalphrase & Syntax", band:3, pts:2,
+    q:"Relativpronomen <em>el que / la que</em>: La chica _____ me habló es mi prima.",
+    opts:["la que","el que","cuya","quien"],
+    correct:0,
+    expl:"La que bezieht sich auf ein weibliches Nomen (la chica). Wird besonders nach Präpositionen bevorzugt, kann aber auch als Subjekt stehen."
+  },
+  {
+    block:"Nominalphrase & Syntax", band:3, pts:2,
+    q:"Ser oder estar? <em>'Mein Bruder ist von Natur aus ein langweiliger Mensch.'</em>",
+    opts:[
+      "Mi hermano es aburrido. (ser = dauerhafte Eigenschaft)",
+      "Mi hermano está aburrido. (estar = vorübergehender Zustand)",
+      "Beide sind korrekt",
+      "Keines von beiden passt"
+    ],
+    correct:0,
+    expl:"Ser + aburrido = jemand IST von Natur aus langweilig (Charakter). Estar + aburrido = jemand ist gerade gelangweilt (vorübergehender Zustand). Wichtiger Bedeutungsunterschied!"
+  },
+  {
+    block:"Nominalphrase & Syntax", band:2, pts:1,
+    q:"Komparativ: 'Mein Bruder ist größer als ich.' → <em>Mi hermano es _____ yo.</em>",
+    opts:["más alto que","más alto de","mayor que","tan alto como"],
+    correct:0,
+    expl:"Komparativ der Überlegenheit: más + Adjektiv + que. (De wird bei Zahlen verwendet: más de cinco.) Mayor bedeutet 'älter' oder 'größer' im übertragenen Sinne."
+  },
+  {
+    block:"Nominalphrase & Syntax", band:2, pts:1,
+    q:"Realer Bedingungssatz: 'Wenn du lernst, wirst du gute Noten bekommen.'",
+    opts:[
+      "Si estudias, sacarás buenas notas.",
+      "Si estudias, sacarías buenas notas.",
+      "Si estudies, sacarás buenas notas.",
+      "Cuando estudias, sacarás buenas notas."
+    ],
+    correct:0,
+    expl:"Realer Bedingungssatz: si + presente de indicativo → presente oder futuro im Hauptsatz. Nach si steht NIE der subjuntivo (in apúntate 1–4)."
+  },
+
+  /* ── BLOCK 5: VERBKONSTRUKTIONEN ─────────────────────────── */
+  {
+    block:"Verbkonstruktionen", band:4, pts:3,
+    q:"<em>Al + Infinitivo</em>: Was bedeutet: <em>Al entrar en clase, todos se callaron.</em>?",
+    opts:[
+      "Als sie ins Klassenzimmer kamen, wurden alle still. (temporal)",
+      "Damit sie ins Klassenzimmer kamen, wurden alle still. (final)",
+      "Obwohl sie ins Klassenzimmer kamen, wurden alle still. (konzessiv)",
+      "Ohne ins Klassenzimmer zu kommen, wurden alle still."
+    ],
+    correct:0,
+    expl:"Al + Infinitivo drückt Gleichzeitigkeit/unmittelbare Abfolge aus: 'beim Tun von etwas / als …'. Es ist eine Infinitivkonstruktion mit temporaler Bedeutung."
+  },
+  {
+    block:"Verbkonstruktionen", band:4, pts:3,
+    q:"<em>Aun + gerundio</em>: Was drückt folgender Satz aus? <em>Aun estudiando mucho, no aprobó.</em>",
+    opts:[
+      "Obwohl er viel lernte, bestand er nicht. (konzessiv)",
+      "Weil er viel lernte, bestand er nicht. (kausal)",
+      "Als er viel lernte, bestand er nicht. (temporal)",
+      "Ohne viel zu lernen, bestand er nicht."
+    ],
+    correct:0,
+    expl:"Aun + gerundio hat konzessive Bedeutung (≈ aunque + subjuntivo/indicativo): 'obwohl / selbst wenn'. Hier: Obwohl er viel lernte, …"
+  },
+  {
+    block:"Verbkonstruktionen", band:4, pts:3,
+    q:"Gerundio als Nebensatzkürzer – welcher Satz ist korrekt kausal gebildet?",
+    opts:[
+      "No teniendo dinero, no pudo comprar nada.",
+      "Teniendo no dinero, no pudo comprar nada.",
+      "No tenido dinero, no pudo comprar nada.",
+      "Sin teniendo dinero, no pudo comprar nada."
+    ],
+    correct:0,
+    expl:"Das gerundio kann temporale oder kausale Nebensätze verkürzen: No teniendo dinero = Da/Weil er kein Geld hatte. Das Partizip (tenido) wäre hier falsch; 'sin' verlangt den Infinitivo."
+  },
+  {
+    block:"Verbkonstruktionen", band:3, pts:2,
+    q:"<em>Acabar de</em> vs. <em>ponerse a</em>: 'Ich fange gerade an zu lesen.' → Wähle die korrekte Übersetzung.",
+    opts:[
+      "Me pongo a leer.",
+      "Acabo de leer.",
+      "Llevo leyendo.",
+      "Sigo leyendo."
+    ],
+    correct:0,
+    expl:"Ponerse a + Infinitivo = anfangen zu (etwas zu tun). Acabar de + Infinitivo = etwas gerade erst getan haben (unmittelbare Vergangenheit)."
+  },
+  {
+    block:"Verbkonstruktionen", band:3, pts:2,
+    q:"<em>Desde hace</em>: 'Ich lerne seit drei Jahren Spanisch.' → <em>Aprendo español _____.</em>",
+    opts:[
+      "desde hace tres años",
+      "hace tres años",
+      "desde tres años",
+      "por tres años"
+    ],
+    correct:0,
+    expl:"Desde hace + Zeitspanne = seit … (Präsens, Handlung dauert an). 'Hace tres años' allein bedeutet 'vor drei Jahren'. 'Desde' ohne 'hace' steht vor einem Zeitpunkt, nicht einer Zeitspanne."
+  },
+  {
+    block:"Verbkonstruktionen", band:2, pts:1,
+    q:"Was bedeutet <em>hay que + Infinitivo</em>?",
+    opts:[
+      "Man muss / Es ist nötig (unpersönliche Verpflichtung)",
+      "Du musst (persönliche Verpflichtung, 2. Person)",
+      "Es gibt etwas zu tun (Existenz)",
+      "Man darf nicht"
+    ],
+    correct:0,
+    expl:"Hay que + Infinitivo ist eine unpersönliche Konstruktion für allgemeine Verpflichtung ('man muss'). Tener que + Inf. ist die persönliche Form ('ich muss / du musst …')."
+  },
+
+  /* ── BLOCK 6: SEMANTIK & LEXIKOGRAMMATIK ─────────────────── */
+  {
+    block:"Semantik & Lexikogrammatik", band:4, pts:3,
+    q:"<em>Saber</em> vs. <em>conocer</em> – wähle die korrekte Zuordnung:",
+    opts:[
+      "Sé hablar alemán. / Conozco a tu hermano.",
+      "Conozco hablar alemán. / Sé a tu hermano.",
+      "Sé Madrid muy bien. / Conozco el camino de memoria.",
+      "Conozco que es tarde. / Sé tu ciudad."
+    ],
+    correct:0,
+    expl:"Saber = wissen (Fakten, Fähigkeiten: saber + Infinitivo / que-Satz). Conocer = kennen (Personen, Orte, Dinge: direktes Objekt; bei Personen mit 'a')."
+  },
+  {
+    block:"Semantik & Lexikogrammatik", band:4, pts:3,
+    q:"Welche Konstruktion mit <em>por</em> drückt Motiv/Ursache aus?",
+    opts:[
+      "Lo hizo por amor.",
+      "Lo hizo para ganar dinero.",
+      "Estudia para ser médico.",
+      "Te llamo para hablar."
+    ],
+    correct:0,
+    expl:"Por + Nomen/Infinitivo drückt Ursache, Motiv oder Grund aus. Para + Infinitivo drückt Zweck/Ziel aus."
+  },
+  {
+    block:"Semantik & Lexikogrammatik", band:3, pts:2,
+    q:"Bilde das Adverb auf <em>-mente</em>: <em>rápido</em> →",
+    opts:["rápidamente","rápidmente","rápidomente","rapidamente"],
+    correct:0,
+    expl:"Adverbien auf -mente werden aus der femininen Adjektivform gebildet: rápido → rápida → rápidamente. Der Akzent des Adjektivs bleibt erhalten."
+  },
+  {
+    block:"Semantik & Lexikogrammatik", band:3, pts:2,
+    q:"Verneinter Imperativ (tú): 'Fahr nicht so schnell!' → <em>¡_____ tan rápido!</em>",
+    opts:["¡No vayas!","¡No vas!","¡No irás!","¡No ve!"],
+    correct:0,
+    expl:"Der verneinte Imperativ (tú) wird aus dem subjuntivo presente gebildet: ir → vayas → ¡No vayas! Der bejahte Imperativ ¡Ve! unterscheidet sich komplett von der verneinten Form."
+  },
+  {
+    block:"Semantik & Lexikogrammatik", band:2, pts:1,
+    q:"<em>Encantar</em> – wähle den korrekten Satz: 'Ich liebe Musik!'",
+    opts:[
+      "¡Me encanta la música!",
+      "¡Me gusto la música!",
+      "¡Yo encanto la música!",
+      "¡Me encanto la música!"
+    ],
+    correct:0,
+    expl:"Encantar funktioniert wie gustar: indir. Obj.-Pronomen + Verb (kongruiert mit dem Subjekt la música = Sg.) → me encanta. Ich bin das indirekte Objekt, nicht das Subjekt."
+  },
+  {
+    block:"Semantik & Lexikogrammatik", band:2, pts:1,
+    q:"Indirekte Rede im Präsens: 'Sie sagt, dass sie müde ist.' → <em>Ella dice que _____.</em>",
+    opts:["está cansada","estará cansada","esté cansada","estaba cansada"],
+    correct:0,
+    expl:"In der indirekten Rede im Präsens (dice que) bleibt das Verb im Indikativ und in der gleichen Zeitform wie in der direkten Rede (estoy → está)."
+  }
+];
+
+/* ================================================================
+   STATE
+================================================================ */
+var studentName   = "";
+var currentQ      = 0;
+var answers       = [];
+var timerInterval = null;
+var secondsLeft   = 30 * 60;
+var submitted     = false;
+
+for (var i = 0; i < QUESTIONS.length; i++) { answers.push(-1); }
+
+/* ================================================================
+   HELPERS
+================================================================ */
+function getEl(id) { return document.getElementById(id); }
+
+function showScreen(id) {
+  var all = document.querySelectorAll(".screen");
+  for (var i = 0; i < all.length; i++) { all[i].classList.remove("active"); }
+  getEl(id).classList.add("active");
+}
+
+function pad(n) { return n < 10 ? "0" + n : "" + n; }
+
+function formatTime(s) {
+  return pad(Math.floor(s / 60)) + ":" + pad(s % 60);
+}
+
+function maxPts() {
+  var t = 0;
+  for (var i = 0; i < QUESTIONS.length; i++) { t += QUESTIONS[i].pts; }
+  return t;
+}
+
+/* ================================================================
+   START SCREEN
+================================================================ */
+getEl("startBtn").addEventListener("click", function () {
+  var val = getEl("nameInput").value.trim();
+  if (!val) {
+    getEl("nameError").style.display = "block";
+    getEl("nameInput").focus();
+    return;
+  }
+  getEl("nameError").style.display = "none";
+  studentName = val;
+  startQuiz();
+});
+
+getEl("nameInput").addEventListener("keydown", function (e) {
+  if (e.key === "Enter") { getEl("startBtn").click(); }
+});
+
+/* ================================================================
+   QUIZ
+================================================================ */
+function startQuiz() {
+  showScreen("quiz-screen");
+  getEl("headerName").textContent = "👤 " + studentName;
+  renderQuestion();
+  startTimer();
+}
+
+function startTimer() {
+  timerInterval = setInterval(function () {
+    secondsLeft--;
+    var tb = getEl("timerBox");
+    tb.textContent = formatTime(secondsLeft);
+    if (secondsLeft <= 60) {
+      tb.className = "timer-box danger";
+    } else if (secondsLeft <= 300) {
+      tb.className = "timer-box warn";
+    }
+    if (secondsLeft <= 0) {
+      clearInterval(timerInterval);
+      doSubmit();
+    }
+  }, 1000);
+}
+
+function renderQuestion() {
+  var q   = QUESTIONS[currentQ];
+  var pct = Math.round((currentQ / QUESTIONS.length) * 100);
+  getEl("progressBar").style.width = pct + "%";
+  getEl("qCounter").textContent    = (currentQ + 1) + " / " + QUESTIONS.length;
+
+  var bClass = q.band === 4 ? "band4" : (q.band === 3 ? "band3" : "band12");
+  var bTag   = q.band === 4 ? "band4-tag" : (q.band === 3 ? "band3-tag" : "band12-tag");
+  var bLabel = "apúntate " + q.band;
+  var pLabel = q.pts + (q.pts === 1 ? " Pkt" : " Pkte");
+
+  var html = '<div class="block-title">' + q.block + '</div>';
+  html += '<div class="question-card ' + bClass + '">';
+  html += '<div class="q-meta">';
+  html += '<span class="q-num">Frage ' + (currentQ + 1) + '</span>';
+  html += '<span class="q-band ' + bTag + '">' + bLabel + '</span>';
+  html += '<span class="q-pts">' + pLabel + '</span>';
+  html += '</div>';
+  html += '<div class="q-text">' + q.q + '</div>';
+  html += '<div class="options">';
+  for (var i = 0; i < q.opts.length; i++) {
+    var sel = (answers[currentQ] === i) ? " selected" : "";
+    html += '<button class="opt-btn' + sel + '" data-i="' + i + '">' + q.opts[i] + '</button>';
+  }
+  html += '</div></div>';
+
+  getEl("quizBody").innerHTML = html;
+
+  /* option click */
+  var btns = getEl("quizBody").querySelectorAll(".opt-btn");
+  for (var j = 0; j < btns.length; j++) {
+    btns[j].addEventListener("click", function () {
+      answers[currentQ] = parseInt(this.getAttribute("data-i"));
+      var all = getEl("quizBody").querySelectorAll(".opt-btn");
+      for (var k = 0; k < all.length; k++) { all[k].classList.remove("selected"); }
+      this.classList.add("selected");
+    });
+  }
+
+  /* nav */
+  var backBtn = getEl("backBtn");
+  var nextBtn = getEl("nextBtn");
+  backBtn.style.visibility = currentQ === 0 ? "hidden" : "visible";
+
+  if (currentQ === QUESTIONS.length - 1) {
+    nextBtn.textContent = "Abgeben ✓";
+    nextBtn.className   = "btn-nav btn-submit";
+  } else {
+    nextBtn.textContent = "Weiter →";
+    nextBtn.className   = "btn-nav btn-next";
+  }
+}
+
+getEl("backBtn").addEventListener("click", function () {
+  if (currentQ > 0) { currentQ--; renderQuestion(); }
+});
+
+getEl("nextBtn").addEventListener("click", function () {
+  if (currentQ < QUESTIONS.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    if (submitted) { return; }
+    var open = 0;
+    for (var i = 0; i < answers.length; i++) { if (answers[i] === -1) open++; }
+    if (open > 0) {
+      if (!confirm(open + " Frage(n) noch unbeantwortet. Trotzdem abgeben?")) { return; }
+    }
+    doSubmit();
+  }
+});
+
+/* ================================================================
+   SUBMIT
+================================================================ */
+function doSubmit() {
+  if (submitted) { return; }
+  submitted = true;
+  clearInterval(timerInterval);
+
+  var used  = 30 * 60 - secondsLeft;
+  var tStr  = pad(Math.floor(used / 60)) + " min " + pad(used % 60) + " s";
+
+  showScreen("result-screen");
+  buildResults(tStr);
+}
+
+/* ================================================================
+   RESULTS
+================================================================ */
+function buildResults(timeStr) {
+  var total = 0;
+  var mp    = maxPts();
+
+  /* per-block & per-band */
+  var blocks = {};
+  var BLOCK_ORDER = [
+    "Zeitformen","Subjuntivo","Pronomen",
+    "Nominalphrase & Syntax","Verbkonstruktionen","Semantik & Lexikogrammatik"
+  ];
+  for (var b = 0; b < BLOCK_ORDER.length; b++) {
+    blocks[BLOCK_ORDER[b]] = { got: 0, max: 0, wrongIdx: [] };
+  }
+
+  for (var i = 0; i < QUESTIONS.length; i++) {
+    var q  = QUESTIONS[i];
+    var bl = blocks[q.block];
+    bl.max += q.pts;
+    if (answers[i] === q.correct) {
+      total   += q.pts;
+      bl.got  += q.pts;
+    } else {
+      bl.wrongIdx.push(i);
+    }
+  }
+
+  var pct        = Math.round((total / mp) * 100);
+  var gradeColor = pct >= 75 ? "#48bb78" : (pct >= 50 ? "#f6ad55" : "#fc8181");
+  var gradeText  = pct >= 75 ? "Sehr gut – weiter so!" : (pct >= 50 ? "In Ordnung – gezielt üben!" : "Förderbedarf – systematisch wiederholen!");
+
+  var html = "";
+
+  /* ── header ── */
+  html += '<div class="result-header">';
+  html += '<h2>Ergebnis: ' + studentName + '</h2>';
+  html += '<div class="big-score" style="color:' + gradeColor + '">' + pct + ' %</div>';
+  html += '<div class="score-sub">' + total + ' von ' + mp + ' Punkten &nbsp;·&nbsp; ' + gradeText + '<br>Bearbeitungszeit: ' + timeStr + '</div>';
+  html += '</div>';
+
+  /* ── bar chart ── */
+  html += '<div class="section-card"><h3>📊 Ergebnisse nach Bereich</h3>';
+  for (var b = 0; b < BLOCK_ORDER.length; b++) {
+    var bn  = BLOCK_ORDER[b];
+    var bd  = blocks[bn];
+    var bp  = bd.max > 0 ? Math.round((bd.got / bd.max) * 100) : 0;
+    var fc  = bp >= 75 ? "fill-good" : (bp >= 50 ? "fill-ok" : "fill-poor");
+    html += '<div class="bar-row">';
+    html += '<div class="bar-label"><span>' + bn + '</span><span>' + bd.got + ' / ' + bd.max + ' (' + bp + ' %)</span></div>';
+    html += '<div class="bar-track"><div class="bar-fill ' + fc + '" style="width:' + bp + '%"></div></div>';
+    html += '</div>';
+  }
+  html += '</div>';
+
+  /* ── Förderempfehlungen ── */
+  var foerder = [];
+  for (var b = 0; b < BLOCK_ORDER.length; b++) {
+    var bn = BLOCK_ORDER[b];
+    var bd = blocks[bn];
+    var bp = bd.max > 0 ? Math.round((bd.got / bd.max) * 100) : 0;
+    if (bp === 100) { continue; }
+    var lvl, cls;
+    if (bp < 50)       { lvl = "hoch";    cls = "foerder-hoch"; }
+    else if (bp < 75)  { lvl = "mittel";  cls = "foerder-mittel"; }
+    else               { lvl = "niedrig"; cls = "foerder-niedrig"; }
+
+    /* collect bands of wrong answers */
+    var bandSet = {};
+    for (var wi = 0; wi < bd.wrongIdx.length; wi++) {
+      bandSet["apúntate " + QUESTIONS[bd.wrongIdx[wi]].band] = true;
+    }
+    var bandStr = Object.keys(bandSet).join(", ");
+
+    foerder.push({ lvl: lvl, cls: cls, name: bn, pct: bp, band: bandStr, desc: getFoerderDesc(bn, bp) });
+  }
+
+  /* sort: hoch → mittel → niedrig */
+  foerder.sort(function (a, b) {
+    var o = { hoch: 0, mittel: 1, niedrig: 2 };
+    return o[a.lvl] - o[b.lvl];
+  });
+
+  html += '<div class="section-card"><h3>🎯 Individuelle Förderempfehlungen</h3>';
+  if (foerder.length === 0) {
+    html += '<p style="color:#276749;font-weight:600">🏆 Alle Bereiche ≥ 100 % – hervorragende Leistung!</p>';
+  }
+  for (var f = 0; f < foerder.length; f++) {
+    var fi   = foerder[f];
+    var icon = fi.lvl === "hoch" ? "🔴" : (fi.lvl === "mittel" ? "🟡" : "🟢");
+    html += '<div class="foerder-item ' + fi.cls + '">';
+    html += '<div class="fi-band">' + fi.band + '</div>';
+    html += '<div class="fi-title">' + icon + ' ' + fi.name + ' &nbsp;–&nbsp; Priorität: ' + fi.lvl + ' (' + fi.pct + ' %)</div>';
+    html += '<div class="fi-desc">' + fi.desc + '</div>';
+    html += '</div>';
+  }
+  html += '</div>';
+
+  /* ── Detailed answers ── */
+  html += '<div class="section-card"><h3>📝 Alle Fragen im Detail</h3></div>';
+  for (var i = 0; i < QUESTIONS.length; i++) {
+    var q    = QUESTIONS[i];
+    var ok   = answers[i] === q.correct;
+    var icon = ok ? "✅" : "❌";
+    var given = answers[i] >= 0 ? q.opts[answers[i]] : "(keine Antwort)";
+
+    html += '<div class="ans-card ' + (ok ? "correct" : "wrong") + '">';
+    html += '<div class="ans-top">';
+    html += '<span class="ans-icon">' + icon + '</span>';
+    html += '<span class="ans-q">Frage ' + (i + 1) + ': ' + q.q + '</span>';
+    html += '</div>';
+    html += '<div class="ans-detail">';
+    if (!ok) {
+      html += 'Deine Antwort: <span class="ans-given">' + given + '</span><br>';
+    }
+    html += 'Richtige Antwort: <span class="ans-right">' + q.opts[q.correct] + '</span><br>';
+    html += '<span class="ans-expl">💡 ' + q.expl + '</span>';
+    html += '</div></div>';
+  }
+
+  /* ── export buttons ── */
+  html += '<div style="margin-top:28px;padding-bottom:8px;">';
+  html += '<button class="btn-export btn-print" onclick="window.print()">🖨️ Als PDF drucken</button>';
+  html += '<button class="btn-export btn-copy"  onclick="
