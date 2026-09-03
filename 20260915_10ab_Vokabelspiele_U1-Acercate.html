@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Vokabelspiele · apúntate 4 · Unidad 1 ¡Acércate!</title>
+<style>
+  :root{
+    --bg:#0f1226;
+    --bg2:#171a38;
+    --card:#1e2348;
+    --card2:#262c5a;
+    --accent:#ff5d8f;     /* pink */
+    --accent2:#22d3ee;    /* cyan */
+    --accent3:#a78bfa;    /* violet */
+    --good:#34d399;       /* green */
+    --bad:#fb7185;        /* red */
+    --warn:#fbbf24;       /* amber */
+    --text:#f2f3ff;
+    --muted:#aab0e0;
+    --radius:18px;
+    --shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:radial-gradient(1200px 800px at 15% -10%,#2a2160 0%,transparent 55%),
+               radial-gradient(1000px 700px at 110% 10%,#0d3b52 0%,transparent 50%),
+               var(--bg);
+    color:var(--text);
+    font-size:17px;
+    line-height:1.4;
+    min-height:100vh;
+    padding:16px;
+    -webkit-text-size-adjust:100%;
+  }
+  .wrap{max-width:860px;margin:0 auto;}
+  h1{font-size:1.7rem;margin:.2em 0;}
+  h2{font-size:1.25rem;margin:.2em 0;}
+  .sub{color:var(--muted);font-size:.95rem;margin-bottom:18px;}
+  .hidden{display:none !important;}
+
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin-bottom:14px;flex-wrap:wrap;
+  }
+  .btn{
+    appearance:none;border:none;cursor:pointer;font-size:1rem;font-weight:600;
+    color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent3));
+    padding:12px 18px;border-radius:14px;box-shadow:var(--shadow);
+    transition:transform .12s ease,filter .12s ease;min-height:48px;
+  }
+  .btn:hover{filter:brightness(1.08);}
+  .btn:active{transform:scale(.96);}
+  .btn.secondary{background:linear-gradient(135deg,#3a4280,#2a2f5e);}
+  .btn.ghost{background:transparent;border:2px solid var(--accent2);color:var(--accent2);box-shadow:none;}
+  .btn.small{padding:9px 13px;font-size:.92rem;min-height:40px;}
+
+  /* MENU */
+  .menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:8px;}
+  .mode-card{
+    background:linear-gradient(160deg,var(--card),var(--card2));
+    border:2px solid transparent;border-radius:var(--radius);padding:18px 16px;
+    cursor:pointer;box-shadow:var(--shadow);transition:transform .15s ease,border-color .15s ease;
+    text-align:left;color:var(--text);
+  }
+  .mode-card:hover{transform:translateY(-4px);border-color:var(--accent2);}
+  .mode-card:active{transform:scale(.97);}
+  .mode-card .mc-emoji{font-size:1.8rem;}
+  .mode-card .mc-title{font-weight:700;font-size:1.1rem;margin:6px 0 3px;}
+  .mode-card .mc-desc{color:var(--muted);font-size:.85rem;}
+
+  .panel{
+    background:linear-gradient(160deg,var(--card),var(--bg2));
+    border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);margin-bottom:16px;
+  }
+  fieldset{border:1px solid #343a72;border-radius:14px;padding:12px 14px;margin:0 0 14px;}
+  legend{color:var(--muted);padding:0 8px;font-weight:600;}
+  .seg{display:flex;flex-wrap:wrap;gap:8px;}
+  .seg button{
+    flex:1 1 auto;min-width:120px;padding:11px;border-radius:12px;border:2px solid #3a4280;
+    background:transparent;color:var(--text);font-size:.95rem;font-weight:600;cursor:pointer;min-height:46px;
+  }
+  .seg button.active{background:linear-gradient(135deg,var(--accent2),var(--accent3));border-color:transparent;color:#06121a;}
+
+  /* HUD */
+  .hud{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+  .hud .pill{background:var(--card);border-radius:999px;padding:8px 14px;font-weight:700;font-size:.95rem;}
+  .hud .pill.score{color:var(--accent2);}
+  .hud .pill.timer{color:var(--warn);min-width:74px;text-align:center;}
+  .hud .pill.timer.danger{color:var(--bad);}
+  .progress{flex:1 1 160px;height:12px;background:#2a2f5e;border-radius:999px;overflow:hidden;min-width:120px;}
+  .progress > div{height:100%;width:0;background:linear-gradient(90deg,var(--accent2),var(--accent));transition:width .3s ease;}
+
+  .prompt-word{font-size:2rem;font-weight:800;text-align:center;margin:18px 0 6px;word-break:break-word;}
+  .prompt-dir{text-align:center;color:var(--muted);font-size:.9rem;margin-bottom:14px;}
+
+  input[type=text]{
+    width:100%;font-size:1.25rem;padding:14px 16px;border-radius:14px;border:2px solid #3a4280;
+    background:#0e1130;color:var(--text);outline:none;text-align:center;
+  }
+  input[type=text]:focus{border-color:var(--accent2);}
+
+  .feedback{text-align:center;font-weight:700;min-height:28px;margin:12px 0;font-size:1.05rem;}
+  .feedback.good{color:var(--good);}
+  .feedback.bad{color:var(--bad);}
+
+  .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:10px;}
+
+  /* special chars keyboard */
+  .speckbd{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:12px;}
+  .speckbd button{
+    font-size:1.2rem;width:52px;height:52px;border-radius:12px;border:2px solid var(--accent3);
+    background:#161a3d;color:var(--text);cursor:pointer;font-weight:700;
+  }
+  .speckbd button:active{transform:scale(.9);background:var(--accent3);color:#10122e;}
+
+  /* matching */
+  .match-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .match-col{display:flex;flex-direction:column;gap:10px;}
+  .match-item{
+    padding:14px 12px;border-radius:13px;background:var(--card2);border:2px solid transparent;
+    cursor:pointer;font-size:1rem;font-weight:600;text-align:center;transition:all .15s ease;word-break:break-word;
+  }
+  .match-item.selected{border-color:var(--accent2);background:#28406a;}
+  .match-item.matched{background:rgba(52,211,153,.18);border-color:var(--good);color:var(--good);cursor:default;}
+  .match-item.wrong{animation:shake .4s;border-color:var(--bad);}
+  @keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-7px);}40%{transform:translateX(7px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}
+
+  /* flashcards */
+  .flip-scene{perspective:1200px;margin:18px auto;max-width:440px;}
+  .flip-card{position:relative;width:100%;height:230px;cursor:pointer;transition:transform .55s;transform-style:preserve-3d;}
+  .flip-card.flipped{transform:rotateY(180deg);}
+  .flip-face{
+    position:absolute;inset:0;backface-visibility:hidden;border-radius:var(--radius);
+    display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;
+    font-size:1.6rem;font-weight:800;box-shadow:var(--shadow);
+  }
+  .flip-front{background:linear-gradient(150deg,var(--accent3),#5b4bc4);}
+  .flip-back{background:linear-gradient(150deg,var(--accent2),#1d8fb0);transform:rotateY(180deg);color:#06121a;}
+  .flip-hint{text-align:center;color:var(--muted);font-size:.85rem;}
+
+  /* multiple choice */
+  .mc-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;}
+  @media(max-width:520px){.mc-options{grid-template-columns:1fr;}}
+  .mc-opt{
+    padding:16px;border-radius:14px;background:var(--card2);border:2px solid transparent;
+    cursor:pointer;font-size:1.05rem;font-weight:600;text-align:center;transition:all .15s ease;word-break:break-word;
+  }
+  .mc-opt:hover{border-color:var(--accent2);}
+  .mc-opt.correct{background:rgba(52,211,153,.22);border-color:var(--good);color:var(--good);}
+  .mc-opt.incorrect{background:rgba(251,113,133,.18);border-color:var(--bad);color:var(--bad);}
+
+  /* speed typing live */
+  .live-word{font-size:1.9rem;font-weight:800;text-align:center;letter-spacing:1px;margin:10px 0;min-height:40px;}
+  .live-word .ch{opacity:.4;}
+  .live-word .ch.ok{color:var(--good);opacity:1;}
+  .live-word .ch.no{color:var(--bad);opacity:1;text-decoration:underline;}
+
+  /* memory */
+  .mem-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px;}
+  @media(max-width:560px){.mem-grid{grid-template-columns:repeat(3,1fr);}}
+  .mem-card{
+    aspect-ratio:3/4;border-radius:13px;cursor:pointer;position:relative;
+    background:linear-gradient(150deg,var(--accent),var(--accent3));
+    display:flex;align-items:center;justify-content:center;padding:6px;text-align:center;
+    font-size:.85rem;font-weight:700;color:#fff;transition:transform .2s ease;
+  }
+  .mem-card .mem-back{font-size:1.6rem;}
+  .mem-card .mem-front{display:none;}
+  .mem-card.open{background:var(--card2);}
+  .mem-card.open .mem-back{display:none;}
+  .mem-card.open .mem-front{display:block;}
+  .mem-card.done{background:rgba(52,211,153,.18);border:2px solid var(--good);color:var(--good);cursor:default;}
+  .mem-card.done .mem-back{display:none;}
+  .mem-card.done .mem-front{display:block;}
+
+  /* result */
+  .result-circle{
+    width:160px;height:160px;border-radius:50%;margin:14px auto;display:flex;align-items:center;justify-content:center;
+    font-size:2.6rem;font-weight:900;
+    background:conic-gradient(var(--accent2) var(--pct,0%),#2a2f5e 0);
+  }
+  .result-circle span{background:var(--bg2);width:124px;height:124px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+  .review-list{margin-top:14px;}
+  .review-item{display:flex;justify-content:space-between;gap:10px;padding:11px 12px;border-radius:11px;background:var(--card2);margin-bottom:8px;flex-wrap:wrap;}
+  .review-item .q{font-weight:700;}
+  .review-item .a{color:var(--good);}
+  .review-item .mine{color:var(--bad);text-decoration:line-through;}
+
+  canvas#confetti{position:fixed;inset:0;pointer-events:none;z-index:9999;}
+  .center{text-align:center;}
+  .small-note{color:var(--muted);font-size:.82rem;text-align:center;margin-top:10px;}
+</style>
+</head>
+<body>
+<canvas id="confetti" class="hidden"></canvas>
+<div class="wrap">
+
+  <!-- ============ MENÜ ============ -->
+  <section id="screen-menu">
+    <div class="topbar">
+      <div>
+        <h1>Vokabelspiele</h1>
+        <div class="sub">apúntate 4 · Unidad 1 „¡Siente Perú!" · ¡Acércate! · Klasse 10ab</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <fieldset>
+        <legend>Übersetzungsrichtung</legend>
+        <div class="seg" id="dir-seg">
+          <button data-dir="es-de" class="active">Spanisch → Deutsch</button>
+          <button data-dir="de-es">Deutsch → Spanisch</button>
+          <button data-dir="mix">Gemischt</button>
+        </div>
+      </fieldset>
+      <div class="small-note" id="vocab-count"></div>
+    </div>
+
+    <h2 style="margin-left:4px;">Spielmodus wählen</h2>
+    <div class="menu-grid" id="mode-grid">
+      <div class="mode-card" data-mode="luecke">
+        <div class="mc-emoji">✏️</div>
+        <div class="mc-title">Lückentext</div>
+        <div class="mc-desc">Übersetzung tippen · 15 s · Tipp-Button</div>
+      </div>
+      <div class="mode-card" data-mode="zuordnung">
+        <div class="mc-emoji">🔗</div>
+        <div class="mc-title">Zuordnung</div>
+        <div class="mc-desc">Paare verbinden · 60 s</div>
+      </div>
+      <div class="mode-card" data-mode="flashcards">
+        <div class="mc-emoji">🃏</div>
+        <div class="mc-title">Lernkarten</div>
+        <div class="mc-desc">Karte umdrehen · ohne Timer</div>
+      </div>
+      <div class="mode-card" data-mode="mc">
+        <div class="mc-emoji">🎯</div>
+        <div class="mc-title">Multiple Choice</div>
+        <div class="mc-desc">4 Optionen · 15 s</div>
+      </div>
+      <div class="mode-card" data-mode="speed">
+        <div class="mc-emoji">⚡</div>
+        <div class="mc-title">Speed-Typing</div>
+        <div class="mc-desc">Live-Feedback · 25 s</div>
+      </div>
+      <div class="mode-card" data-mode="memory">
+        <div class="mc-emoji">🧠</div>
+        <div class="mc-title">Memory</div>
+        <div class="mc-desc">Paare merken · Zeit & Züge</div>
+      </div>
+    </div>
+    <div class="small-note">Funktioniert offline · keine Anmeldung · für iPad & Laptop</div>
+  </section>
+
+  <!-- ============ SPIEL ============ -->
+  <section id="screen-game" class="hidden">
+    <div class="topbar">
+      <button class="btn secondary small" id="back-menu">‹ Menü</button>
+      <h2 id="game-title"></h2>
+      <div style="width:64px;"></div>
+    </div>
+
+    <div class="hud" id="hud">
+      <div class="pill score">Punkte: <span id="score">0</span></div>
+      <div class="progress"><div id="progress-bar"></div></div>
+      <div class="pill timer" id="timer-pill">⏱ <span id="timer">–</span></div>
+    </div>
+
+    <div class="panel" id="game-area"></div>
+  </section>
+
+  <!-- ============ ERGEBNIS ============ -->
+  <section id="screen-result" class="hidden">
+    <div class="panel center">
+      <h2 id="result-title">Ergebnis</h2>
+      <div class="result-circle" id="result-circle"><span id="result-pct">0%</span></div>
+      <div id="result-msg" style="font-weight:700;font-size:1.1rem;"></div>
+      <div class="review-list" id="review-list"></div>
+      <div class="row" style="margin-top:18px;">
+        <button class="btn" id="replay-btn">Nochmal spielen</button>
+        <button class="btn secondary" id="result-menu-btn">Zurück zum Menü</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ============================================================
+   VOKABELN HIER ANPASSEN
+   Quelle: apúntate 4 · Unidad 1 ¡Acércate! · _Werkstatt/Vokabular/apuntate-4/unidad-01-acercate.tsv (52 Einträge, Stand 03.09.2026)
+   es = Spanisch (Fremdsprache) | de = Deutsch (Ausgangssprache)
+   ============================================================ */
+const VOKABELN = [
+  {es:"sentir algo", de:"etw. fühlen, spüren"},
+  {es:"Perú", de:"Peru"},
+  {es:"el Camino del Inca", de:"Straßensystem der Inka"},
+  {es:"extenderse", de:"sich ausbreiten, erstrecken"},
+  {es:"Ecuador", de:"Ecuador"},
+  {es:"el/la dueño/-a", de:"der/die Besitzer/in"},
+  {es:"administrar algo", de:"etw. verwalten"},
+  {es:"conectar algo", de:"etw. verbinden"},
+  {es:"la comunicación, las comunicaciones", de:"die Kommunikation, Verständigung"},
+  {es:"el comercio", de:"der Handel"},
+  {es:"Machu Picchu", de:"Ruinenstadt der Inka"},
+  {es:"religioso/-a", de:"religiös"},
+  {es:"el/la creador/a", de:"der/die Schöpfer/in"},
+  {es:"Viracocha", de:"Gott der Schöpfung der Inka"},
+  {es:"Pachamama", de:"Göttin der Erde der Inka"},
+  {es:"el/la dios/a", de:"der Gott, die Göttin"},
+  {es:"la tierra", de:"die Erde, der Boden"},
+  {es:"el lago Titicaca", de:"der Titicacasee"},
+  {es:"navegar", de:"mit dem Schiff fahren, segeln"},
+  {es:"el junco", de:"das Schilfrohr"},
+  {es:"el/la cual", de:"welche/r, welches; der, die, das"},
+  {es:"el caballito de totora", de:"Fischerboot aus Schilf"},
+  {es:"Ingapirca", de:"Kultstätte der Inka"},
+  {es:"el Templo del Sol", de:"der Sonnentempel"},
+  {es:"la predicción, las predicciones", de:"die Vorhersage"},
+  {es:"el Apurímac", de:"Fluss im Südosten Perus"},
+  {es:"el puente (colgante)", de:"die (Hänge-)Brücke"},
+  {es:"Queshuachaca", de:"Hängebrücke in Peru"},
+  {es:"el chasqui", de:"Bote im Reich der Inka"},
+  {es:"el/la mensajero/-a", de:"der/die Bote/-in"},
+  {es:"la forma", de:"die Art und Weise, Form"},
+  {es:"oral", de:"mündlich"},
+  {es:"recorrer algo", de:"etw. zurücklegen, bereisen"},
+  {es:"el trayecto", de:"die Strecke"},
+  {es:"Alto Loa", de:"Nationalpark in Chile"},
+  {es:"la terraza", de:"die Terrasse"},
+  {es:"fértil", de:"fruchtbar"},
+  {es:"sembrar", de:"etw. säen"},
+  {es:"la quinua", de:"Quinoa"},
+  {es:"el cultivo", de:"der Anbau"},
+  {es:"Cuzco", de:"Stadt im Süden von Peru"},
+  {es:"el quipu", de:"Knotenschrift der Inka"},
+  {es:"llevar (a)", de:"führen (nach)"},
+  {es:"el quechua", de:"Quechua"},
+  {es:"el ombligo", de:"der Nabel"},
+  {es:"el/la maestro/-a", de:"der/die Lehrer/in"},
+  {es:"el sistema", de:"das System"},
+  {es:"la cuerda", de:"die Schnur, das Seil"},
+  {es:"el nudo", de:"der Knoten"},
+  {es:"llevar la contabilidad", de:"Buch führen"},
+  {es:"el estado", de:"der Staat"},
+  {es:"la manera", de:"die Art und Weise"},
+];
+
+/* Sonderzeichen der Fremdsprache (SONDERZEICHEN HIER ANPASSEN) */
+const SPECIAL_CHARS = ["á","é","í","ó","ú","ñ","ü","¿","¡"];
+
+/* ============================================================
+   Hilfsfunktionen
+   ============================================================ */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+let DIRECTION = "es-de"; // es-de | de-es | mix
+
+// Normalisierung für Tipp-Vergleich: kleinschreibung, trim, Mehrfachleerzeichen, Akzente optional
+function normalize(str){
+  return str.toLowerCase().trim()
+    .replace(/\s+/g," ")
+    .replace(/[.,;!¡¿?]/g,"");
+}
+function stripAccents(str){
+  return str.normalize("NFD").replace(/[̀-ͯ]/g,"");
+}
+// akzeptiert mehrere durch Komma getrennte Lösungen + akzent-tolerant
+function isCorrect(input, answer){
+  const inN = normalize(input);
+  const candidates = answer.split(/[,/]| oder /).map(a=>normalize(a));
+  for(const c of candidates){
+    if(inN === c) return true;
+    if(stripAccents(inN) === stripAccents(c)) return true;
+  }
+  // ganze Antwort als ganzes
+  if(inN === normalize(answer)) return true;
+  if(stripAccents(inN) === stripAccents(normalize(answer))) return true;
+  return false;
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+// Liefert für eine Vokabel die Frage/Antwort je nach Richtung
+function makeQA(v, dir){
+  let d = dir;
+  if(d==="mix") d = Math.random()<0.5 ? "es-de" : "de-es";
+  if(d==="es-de") return {q:v.es, a:v.de, qLang:"es", aLang:"de"};
+  return {q:v.de, a:v.es, qLang:"de", aLang:"es"};
+}
+
+/* ============================================================
+   Screen-Steuerung
+   ============================================================ */
+const screens = {menu:$("#screen-menu"), game:$("#screen-game"), result:$("#screen-result")};
+function showScreen(name){
+  Object.values(screens).forEach(s=>s.classList.add("hidden"));
+  screens[name].classList.remove("hidden");
+  window.scrollTo(0,0);
+}
+
+/* ============================================================
+   Timer
+   ============================================================ */
+let timerId = null;
+function startTimer(seconds, onTick, onEnd){
+  clearTimer();
+  let remaining = seconds;
+  const pill = $("#timer-pill");
+  $("#timer").textContent = remaining;
+  pill.classList.remove("danger");
+  timerId = setInterval(()=>{
+    remaining--;
+    $("#timer").textContent = remaining;
+    if(remaining<=5) pill.classList.add("danger");
+    if(onTick) onTick(remaining);
+    if(remaining<=0){ clearTimer(); if(onEnd) onEnd(); }
+  },1000);
+}
+function clearTimer(){ if(timerId){clearInterval(timerId);timerId=null;} }
+function setTimerDisplay(txt){ $("#timer").textContent = txt; $("#timer-pill").classList.remove("danger"); }
+
+/* ============================================================
+   Sonderzeichen-Tastatur
+   ============================================================ */
+function buildSpecialKeyboard(targetInput){
+  const kbd = document.createElement("div");
+  kbd.className = "speckbd";
+  SPECIAL_CHARS.forEach(ch=>{
+    const b = document.createElement("button");
+    b.type="button";
+    b.textContent = ch;
+    b.addEventListener("click", ()=>{
+      const start = targetInput.selectionStart ?? targetInput.value.length;
+      const end = targetInput.selectionEnd ?? targetInput.value.length;
+      targetInput.value = targetInput.value.slice(0,start) + ch + targetInput.value.slice(end);
+      targetInput.focus();
+      const pos = start + ch.length;
+      targetInput.setSelectionRange(pos,pos);
+      targetInput.dispatchEvent(new Event("input"));
+    });
+    kbd.appendChild(b);
+  });
+  return kbd;
+}
+
+/* ============================================================
+   Gemeinsamer Spielzustand
+   ============================================================ */
+let state = {};
+function resetHud(showProgress=true, showTimer=true){
+  $("#score").textContent = "0";
+  $("#progress-bar").style.width = "0%";
+  $(".hud .progress").style.display = showProgress ? "" : "none";
+  $("#timer-pill").style.display = showTimer ? "" : "none";
+  $(".hud .score").style.display = "";
+}
+function updateScore(s){ $("#score").textContent = s; }
+function updateProgress(done,total){ $("#progress-bar").style.width = (total? (done/total*100):0)+"%"; }
+
+/* ============================================================
+   Konfetti
+   ============================================================ */
+function launchConfetti(){
+  const canvas = $("#confetti");
+  canvas.classList.remove("hidden");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  const colors = ["#ff5d8f","#22d3ee","#a78bfa","#34d399","#fbbf24"];
+  const pieces = [];
+  for(let i=0;i<150;i++){
+    pieces.push({
+      x:Math.random()*canvas.width, y:Math.random()*-canvas.height,
+      r:6+Math.random()*8, c:colors[i%colors.length],
+      vy:2+Math.random()*4, vx:-2+Math.random()*4, rot:Math.random()*360, vrot:-6+Math.random()*12
+    });
+  }
+  let frames=0;
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p=>{
+      p.y+=p.vy; p.x+=p.vx; p.rot+=p.vrot;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle=p.c; ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r*0.6); ctx.restore();
+    });
+    frames++;
+    if(frames<220) requestAnimationFrame(draw);
+    else { ctx.clearRect(0,0,canvas.width,canvas.height); canvas.classList.add("hidden"); }
+  }
+  draw();
+}
+
+/* ============================================================
+   Ergebnis-Screen
+   ============================================================ */
+function showResult({correct,total,mistakes,title="Ergebnis",extraMsg=""}){
+  clearTimer();
+  const pct = total ? Math.round(correct/total*100) : 0;
+  $("#result-title").textContent = title;
+  $("#result-circle").style.setProperty("--pct", pct+"%");
+  $("#result-pct").textContent = pct+"%";
+  let msg = extraMsg || (correct+" von "+total+" richtig");
+  $("#result-msg").textContent = msg;
+
+  const rl = $("#review-list");
+  rl.innerHTML = "";
+  if(mistakes && mistakes.length){
+    const h = document.createElement("div");
+    h.style.cssText="margin:14px 0 8px;font-weight:700;color:var(--warn);";
+    h.textContent = "Fehler-Review ("+mistakes.length+")";
+    rl.appendChild(h);
+    mistakes.forEach(m=>{
+      const item = document.createElement("div");
+      item.className="review-item";
+      let mineHtml = m.mine!==undefined && m.mine!=="" ? '<span class="mine">'+escapeHtml(m.mine)+'</span> ' : '';
+      item.innerHTML = '<span class="q">'+escapeHtml(m.q)+'</span>'+
+                       '<span>'+mineHtml+'<span class="a">'+escapeHtml(m.a)+'</span></span>';
+      rl.appendChild(item);
+    });
+  }
+  showScreen("result");
+  if(pct===100) launchConfetti();
+}
+function escapeHtml(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+let currentMode = null;
+function startMode(mode){
+  currentMode = mode;
+  showScreen("game");
+  const area = $("#game-area");
+  area.innerHTML = "";
+  clearTimer();
+  if(mode==="luecke") initLuecke(area);
+  else if(mode==="zuordnung") initZuordnung(area);
+  else if(mode==="flashcards") initFlashcards(area);
+  else if(mode==="mc") initMC(area);
+  else if(mode==="speed") initSpeed(area);
+  else if(mode==="memory") initMemory(area);
+}
+
+/* ============================================================
+   MODUS 1: LÜCKENTEXT
+   ============================================================ */
+function initLuecke(area){
+  $("#game-title").textContent = "✏️ Lückentext";
+  resetHud(true,true);
+  const pool = shuffle(VOKABELN).slice(0,15);
+  state = {pool, idx:0, score:0, correct:0, mistakes:[], hintUsed:false};
+
+  area.innerHTML = `
+    <div class="prompt-dir" id="l-dir"></div>
+    <div class="prompt-word" id="l-word"></div>
+    <input type="text" id="l-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Übersetzung eingeben…">
+    <div id="l-kbd"></div>
+    <div class="feedback" id="l-feedback"></div>
+    <div class="row">
+      <button class="btn ghost small" id="l-hint">💡 Tipp (−1 Punkt)</button>
+      <button class="btn" id="l-check">Prüfen</button>
+    </div>`;
+  const input = $("#l-input");
+  $("#l-check").addEventListener("click", checkLuecke);
+  $("#l-hint").addEventListener("click", hintLuecke);
+  input.addEventListener("keydown", e=>{ if(e.key==="Enter") checkLuecke(); });
+  loadLuecke();
+}
+function loadLuecke(){
+  const v = state.pool[state.idx];
+  state.qa = makeQA(v, DIRECTION);
+  state.hintUsed = false;
+  $("#l-dir").textContent = state.qa.qLang==="es" ? "Spanisch → Deutsch" : "Deutsch → Spanisch";
+  $("#l-word").textContent = state.qa.q;
+  const input = $("#l-input");
+  input.value=""; input.disabled=false;
+  $("#l-feedback").textContent=""; $("#l-feedback").className="feedback";
+  updateProgress(state.idx, state.pool.length);
+  // Sonderzeichen-Tastatur nur wenn Fremdsprache (Spanisch) getippt wird
+  const kbdWrap = $("#l-kbd"); kbdWrap.innerHTML="";
+  if(state.qa.aLang==="es") kbdWrap.appendChild(buildSpecialKeyboard(input));
+  input.focus();
+  startTimer(15, null, ()=>{ revealLuecke(false,true); });
+}
+function hintLuecke(){
+  if(state.hintUsed) return;
+  state.hintUsed = true;
+  state.score = Math.max(0, state.score-1);
+  updateScore(state.score);
+  const input = $("#l-input");
+  const first = state.qa.a.charAt(0);
+  if(!input.value) input.value = first;
+  $("#l-feedback").textContent = "Erster Buchstabe: "+first;
+  $("#l-feedback").className="feedback";
+  input.focus();
+}
+function checkLuecke(){
+  const input = $("#l-input");
+  if(input.disabled) return;
+  const ok = isCorrect(input.value, state.qa.a);
+  revealLuecke(ok,false);
+}
+function revealLuecke(ok, timeout){
+  clearTimer();
+  const input = $("#l-input"); input.disabled=true;
+  const fb = $("#l-feedback");
+  if(ok){
+    state.score += state.hintUsed?1:2;
+    state.correct++;
+    updateScore(state.score);
+    fb.textContent = "Richtig! ✓";
+    fb.className="feedback good";
+  } else {
+    fb.textContent = (timeout?"Zeit abgelaufen. ":"Leider falsch. ")+"Lösung: "+state.qa.a;
+    fb.className="feedback bad";
+    state.mistakes.push({q:state.qa.q, a:state.qa.a, mine:input.value});
+  }
+  setTimeout(()=>{
+    state.idx++;
+    if(state.idx>=state.pool.length){
+      updateProgress(state.pool.length, state.pool.length);
+      showResult({correct:state.correct,total:state.pool.length,mistakes:state.mistakes,title:"✏️ Lückentext"});
+    } else loadLuecke();
+  }, ok?700:1500);
+}
+
+/* ============================================================
+   MODUS 2: ZUORDNUNG
+   ============================================================ */
+function initZuordnung(area){
+  $("#game-title").textContent = "🔗 Zuordnung";
+  resetHud(true,true);
+  const PAIRS = 12;
+  const chosen = shuffle(VOKABELN).slice(0,PAIRS);
+  state = {pairs:chosen, matched:0, selected:null, attempts:0, hits:0, mistakes:[]};
+
+  area.innerHTML = `
+    <div class="prompt-dir">Klicke ein Wort links, dann seine Übersetzung rechts.</div>
+    <div class="match-cols">
+      <div class="match-col" id="m-left"></div>
+      <div class="match-col" id="m-right"></div>
+    </div>`;
+  const left = $("#m-left"), right = $("#m-right");
+  const leftItems = shuffle(chosen.map((v,i)=>({id:i,txt:v.es})));
+  const rightItems = shuffle(chosen.map((v,i)=>({id:i,txt:v.de})));
+  leftItems.forEach(it=>left.appendChild(makeMatchItem(it,"left")));
+  rightItems.forEach(it=>right.appendChild(makeMatchItem(it,"right")));
+  updateProgress(0,PAIRS);
+  startTimer(60, null, ()=>endZuordnung(true));
+}
+function makeMatchItem(it, side){
+  const el = document.createElement("div");
+  el.className="match-item";
+  el.textContent = it.txt;
+  el.dataset.id = it.id;
+  el.dataset.side = side;
+  el.addEventListener("click", ()=>onMatchClick(el));
+  return el;
+}
+function onMatchClick(el){
+  if(el.classList.contains("matched")) return;
+  const sel = state.selected;
+  if(!sel){
+    el.classList.add("selected");
+    state.selected = el;
+    return;
+  }
+  if(sel===el){ el.classList.remove("selected"); state.selected=null; return; }
+  if(sel.dataset.side===el.dataset.side){
+    sel.classList.remove("selected");
+    el.classList.add("selected");
+    state.selected=el;
+    return;
+  }
+  // verschiedene Spalten -> prüfen
+  state.attempts++;
+  if(sel.dataset.id===el.dataset.id){
+    sel.classList.remove("selected");
+    sel.classList.add("matched"); el.classList.add("matched");
+    state.selected=null; state.matched++; state.hits++;
+    updateScore(state.hits);
+    updateProgress(state.matched, state.pairs.length);
+    if(state.matched===state.pairs.length) setTimeout(()=>endZuordnung(false),400);
+  } else {
+    const a=sel, b=el;
+    a.classList.add("wrong"); b.classList.add("wrong");
+    const v = state.pairs[parseInt(sel.dataset.id,10)];
+    state.mistakes.push({q:v.es, a:v.de});
+    setTimeout(()=>{
+      a.classList.remove("wrong","selected"); b.classList.remove("wrong");
+    },450);
+    state.selected=null;
+  }
+}
+function endZuordnung(timeout){
+  clearTimer();
+  // dedupe mistakes (nur nicht gematchte)
+  const uniq = [];
+  const seen = new Set();
+  state.mistakes.forEach(m=>{ if(!seen.has(m.q)){seen.add(m.q);uniq.push(m);} });
+  showResult({correct:state.matched,total:state.pairs.length,mistakes:uniq,
+    title:"🔗 Zuordnung",
+    extraMsg: state.matched+" von "+state.pairs.length+" Paaren"+(timeout?" (Zeit abgelaufen)":"")});
+}
+
+/* ============================================================
+   MODUS 3: LERNKARTEN
+   ============================================================ */
+function initFlashcards(area){
+  $("#game-title").textContent = "🃏 Lernkarten";
+  resetHud(true,false);
+  setTimerDisplay("–");
+  let queue = shuffle(VOKABELN).map(v=>makeQA(v,DIRECTION));
+  state = {queue, total:queue.length, known:0, idx:0, flipped:false};
+
+  area.innerHTML = `
+    <div class="prompt-dir" id="f-dir"></div>
+    <div class="flip-scene">
+      <div class="flip-card" id="f-card">
+        <div class="flip-face flip-front" id="f-front"></div>
+        <div class="flip-face flip-back" id="f-back"></div>
+      </div>
+    </div>
+    <div class="flip-hint">Tippe die Karte zum Umdrehen</div>
+    <div class="row">
+      <button class="btn ghost small" id="f-again">↻ Nochmal</button>
+      <button class="btn small" id="f-known">✓ Wusste ich</button>
+    </div>`;
+  $("#f-card").addEventListener("click", ()=>{
+    state.flipped=!state.flipped;
+    $("#f-card").classList.toggle("flipped", state.flipped);
+  });
+  $("#f-known").addEventListener("click", ()=>nextFlash(true));
+  $("#f-again").addEventListener("click", ()=>nextFlash(false));
+  loadFlash();
+}
+function loadFlash(){
+  const qa = state.queue[0];
+  $("#f-dir").textContent = (qa.qLang==="es"?"Spanisch":"Deutsch")+" — drehen für "+(qa.aLang==="es"?"Spanisch":"Deutsch");
+  $("#f-front").textContent = qa.q;
+  $("#f-back").textContent = qa.a;
+  state.flipped=false;
+  $("#f-card").classList.remove("flipped");
+  updateScore(state.known);
+  updateProgress(state.known, state.total);
+}
+function nextFlash(known){
+  const qa = state.queue.shift();
+  if(known){ state.known++; }
+  else { state.queue.push(qa); } // unsichere ans Ende
+  updateScore(state.known);
+  if(state.queue.length===0 || state.known>=state.total){
+    showResult({correct:state.total,total:state.total,mistakes:[],
+      title:"🃏 Lernkarten", extraMsg:"Alle "+state.total+" Karten als gewusst markiert!"});
+  } else {
+    loadFlash();
+  }
+}
+
+/* ============================================================
+   MODUS 4: MULTIPLE CHOICE
+   ============================================================ */
+function initMC(area){
+  $("#game-title").textContent = "🎯 Multiple Choice";
+  resetHud(true,true);
+  const pool = shuffle(VOKABELN).slice(0,15);
+  state = {pool, idx:0, score:0, correct:0, mistakes:[], locked:false};
+  area.innerHTML = `
+    <div class="prompt-dir" id="mc-dir"></div>
+    <div class="prompt-word" id="mc-word"></div>
+    <div class="mc-options" id="mc-opts"></div>
+    <div class="feedback" id="mc-feedback"></div>`;
+  loadMC();
+}
+function loadMC(){
+  const v = state.pool[state.idx];
+  const qa = makeQA(v, DIRECTION);
+  state.qa = qa; state.locked=false;
+  $("#mc-dir").textContent = qa.qLang==="es"?"Spanisch → Deutsch":"Deutsch → Spanisch";
+  $("#mc-word").textContent = qa.q;
+  $("#mc-feedback").textContent=""; $("#mc-feedback").className="feedback";
+  updateProgress(state.idx, state.pool.length);
+
+  // Distraktoren in derselben Antwortsprache
+  const answerField = qa.aLang==="es" ? "es" : "de";
+  const others = VOKABELN.filter(x=>x[answerField]!==qa.a);
+  const distract = shuffle(others).slice(0,3).map(x=>x[answerField]);
+  const options = shuffle([qa.a, ...distract]);
+
+  const wrap = $("#mc-opts"); wrap.innerHTML="";
+  options.forEach(opt=>{
+    const b = document.createElement("div");
+    b.className="mc-opt"; b.textContent=opt;
+    b.addEventListener("click", ()=>answerMC(b,opt));
+    wrap.appendChild(b);
+  });
+  startTimer(15,null,()=>{ if(!state.locked) timeoutMC(); });
+}
+function answerMC(el, opt){
+  if(state.locked) return;
+  state.locked=true; clearTimer();
+  const correct = opt===state.qa.a;
+  const opts = $$("#mc-opts .mc-opt");
+  opts.forEach(o=>{
+    if(o.textContent===state.qa.a) o.classList.add("correct");
+    o.style.pointerEvents="none";
+  });
+  if(correct){
+    el.classList.add("correct");
+    state.score+=2; state.correct++; updateScore(state.score);
+    $("#mc-feedback").textContent="Richtig! ✓"; $("#mc-feedback").className="feedback good";
+  } else {
+    el.classList.add("incorrect");
+    state.mistakes.push({q:state.qa.q,a:state.qa.a,mine:opt});
+    $("#mc-feedback").textContent="Falsch. Richtig: "+state.qa.a; $("#mc-feedback").className="feedback bad";
+  }
+  setTimeout(nextMC, correct?700:1400);
+}
+function timeoutMC(){
+  state.locked=true;
+  $$("#mc-opts .mc-opt").forEach(o=>{ if(o.textContent===state.qa.a)o.classList.add("correct"); o.style.pointerEvents="none"; });
+  $("#mc-feedback").textContent="Zeit abgelaufen. Richtig: "+state.qa.a; $("#mc-feedback").className="feedback bad";
+  state.mistakes.push({q:state.qa.q,a:state.qa.a,mine:""});
+  setTimeout(nextMC,1400);
+}
+function nextMC(){
+  state.idx++;
+  if(state.idx>=state.pool.length){
+    updateProgress(state.pool.length,state.pool.length);
+    showResult({correct:state.correct,total:state.pool.length,mistakes:state.mistakes,title:"🎯 Multiple Choice"});
+  } else loadMC();
+}
+
+/* ============================================================
+   MODUS 5: SPEED-TYPING
+   ============================================================ */
+function initSpeed(area){
+  $("#game-title").textContent = "⚡ Speed-Typing";
+  resetHud(true,true);
+  const pool = shuffle(VOKABELN).slice(0,15);
+  state = {pool, idx:0, score:0, correct:0, mistakes:[]};
+  area.innerHTML = `
+    <div class="prompt-dir" id="s-dir"></div>
+    <div class="prompt-word" id="s-word"></div>
+    <div class="live-word" id="s-live"></div>
+    <input type="text" id="s-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Tippen…">
+    <div id="s-kbd"></div>
+    <div class="feedback" id="s-feedback"></div>
+    <div class="row"><button class="btn small" id="s-check">Prüfen / Weiter</button></div>`;
+  const input = $("#s-input");
+  input.addEventListener("input", renderLive);
+  input.addEventListener("keydown", e=>{ if(e.key==="Enter") checkSpeed(); });
+  $("#s-check").addEventListener("click", checkSpeed);
+  loadSpeed();
+}
+function loadSpeed(){
+  const v = state.pool[state.idx];
+  const qa = makeQA(v, DIRECTION);
+  state.qa = qa;
+  $("#s-dir").textContent = qa.qLang==="es"?"Spanisch → Deutsch":"Deutsch → Spanisch";
+  $("#s-word").textContent = qa.q;
+  const input = $("#s-input");
+  input.value=""; input.disabled=false;
+  $("#s-feedback").textContent=""; $("#s-feedback").className="feedback";
+  updateProgress(state.idx, state.pool.length);
+  const kbd = $("#s-kbd"); kbd.innerHTML="";
+  if(qa.aLang==="es") kbd.appendChild(buildSpecialKeyboard(input));
+  renderLive();
+  input.focus();
+  startTimer(25,null,()=>revealSpeed(false,true));
+}
+function renderLive(){
+  const input = $("#s-input");
+  const target = state.qa.a;
+  const typed = input.value;
+  const live = $("#s-live");
+  live.innerHTML="";
+  for(let i=0;i<target.length;i++){
+    const span = document.createElement("span");
+    span.className="ch";
+    span.textContent = target[i]===" " ? "␣" : target[i];
+    if(i<typed.length){
+      const tc = stripAccents(typed[i].toLowerCase());
+      const gc = stripAccents(target[i].toLowerCase());
+      span.classList.add(tc===gc?"ok":"no");
+    }
+    live.appendChild(span);
+  }
+}
+function checkSpeed(){
+  const input=$("#s-input");
+  if(input.disabled) return;
+  revealSpeed(isCorrect(input.value,state.qa.a),false);
+}
+function revealSpeed(ok,timeout){
+  clearTimer();
+  const input=$("#s-input"); input.disabled=true;
+  const fb=$("#s-feedback");
+  if(ok){
+    state.score+=2; state.correct++; updateScore(state.score);
+    fb.textContent="Richtig! ✓"; fb.className="feedback good";
+  } else {
+    fb.textContent=(timeout?"Zeit abgelaufen. ":"Falsch. ")+"Lösung: "+state.qa.a;
+    fb.className="feedback bad";
+    state.mistakes.push({q:state.qa.q,a:state.qa.a,mine:input.value});
+  }
+  setTimeout(()=>{
+    state.idx++;
+    if(state.idx>=state.pool.length){
+      updateProgress(state.pool.length,state.pool.length);
+      showResult({correct:state.correct,total:state.pool.length,mistakes:state.mistakes,title:"⚡ Speed-Typing"});
+    } else loadSpeed();
+  }, ok?700:1500);
+}
+
+/* ============================================================
+   MODUS 6: MEMORY
+   ============================================================ */
+function initMemory(area){
+  $("#game-title").textContent = "🧠 Memory";
+  resetHud(false,true);
+  const PAIRS = 6;
+  const chosen = shuffle(VOKABELN).slice(0,PAIRS);
+  let cards=[];
+  chosen.forEach((v,i)=>{
+    cards.push({pid:i,txt:v.es,type:"es"});
+    cards.push({pid:i,txt:v.de,type:"de"});
+  });
+  cards = shuffle(cards);
+  state = {cards, open:[], matched:0, pairs:PAIRS, moves:0, seconds:0, lock:false};
+  $(".hud .score").style.display="none";
+  // eigener Zug/Zeit-Anzeiger
+  area.innerHTML = `
+    <div class="prompt-dir">Finde die Paare: spanisches Wort + deutsche Übersetzung.</div>
+    <div class="hud" style="justify-content:center;">
+      <div class="pill">Züge: <span id="mem-moves">0</span></div>
+      <div class="pill">Paare: <span id="mem-pairs">0/${PAIRS}</span></div>
+    </div>
+    <div class="mem-grid" id="mem-grid"></div>`;
+  const grid = $("#mem-grid");
+  cards.forEach((c,i)=>{
+    const el=document.createElement("div");
+    el.className="mem-card";
+    el.dataset.i=i;
+    el.innerHTML = `<span class="mem-back">❓</span><span class="mem-front">${escapeHtml(c.txt)}</span>`;
+    el.addEventListener("click", ()=>flipMem(i));
+    grid.appendChild(el);
+  });
+  state.seconds=0;
+  setTimerDisplay("0s");
+  timerId = setInterval(()=>{ state.seconds++; $("#timer").textContent = state.seconds+"s"; },1000);
+}
+function flipMem(i){
+  if(state.lock) return;
+  const card = state.cards[i];
+  const el = $('#mem-grid .mem-card[data-i="'+i+'"]');
+  if(el.classList.contains("done")||el.classList.contains("open")) return;
+  el.classList.add("open");
+  state.open.push(i);
+  if(state.open.length===2){
+    state.moves++; $("#mem-moves").textContent=state.moves;
+    state.lock=true;
+    const [a,b]=state.open;
+    const ca=state.cards[a], cb=state.cards[b];
+    const elA=$('#mem-grid .mem-card[data-i="'+a+'"]');
+    const elB=$('#mem-grid .mem-card[data-i="'+b+'"]');
+    if(ca.pid===cb.pid && ca.type!==cb.type){
+      setTimeout(()=>{
+        elA.classList.add("done"); elB.classList.add("done");
+        elA.classList.remove("open"); elB.classList.remove("open");
+        state.matched++; $("#mem-pairs").textContent=state.matched+"/"+state.pairs;
+        state.open=[]; state.lock=false;
+        if(state.matched===state.pairs) endMemory();
+      },450);
+    } else {
+      setTimeout(()=>{
+        elA.classList.remove("open"); elB.classList.remove("open");
+        state.open=[]; state.lock=false;
+      },850);
+    }
+  }
+}
+function endMemory(){
+  clearTimer();
+  showResult({correct:state.pairs,total:state.pairs,mistakes:[],
+    title:"🧠 Memory",
+    extraMsg:"Geschafft in "+state.moves+" Zügen und "+state.seconds+" Sekunden!"});
+}
+
+/* ============================================================
+   Event-Bindung (alle als addEventListener)
+   ============================================================ */
+document.addEventListener("DOMContentLoaded", ()=>{
+  $("#vocab-count").textContent = VOKABELN.length+" Vokabeln geladen";
+
+  // Richtungs-Auswahl
+  $$("#dir-seg button").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      $$("#dir-seg button").forEach(x=>x.classList.remove("active"));
+      b.classList.add("active");
+      DIRECTION = b.dataset.dir;
+    });
+  });
+
+  // Modus-Auswahl
+  $$("#mode-grid .mode-card").forEach(card=>{
+    card.addEventListener("click", ()=>startMode(card.dataset.mode));
+  });
+
+  // Navigation
+  $("#back-menu").addEventListener("click", ()=>{ clearTimer(); showScreen("menu"); });
+  $("#result-menu-btn").addEventListener("click", ()=>{ showScreen("menu"); });
+  $("#replay-btn").addEventListener("click", ()=>{ if(currentMode) startMode(currentMode); });
+});
+</script>
+</body>
+</html>
